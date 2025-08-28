@@ -12,7 +12,6 @@ import { TuyaCameraStreamingDelegate } from './cameraStreamingDelegate';
  * Tuya Camera Accessory
  */
 export class TuyaCameraAccessory {
-  private service: Service;
   private motionService?: Service;
   private tuyaDevice: TuyaDevice;
   private streamingDelegate: TuyaCameraStreamingDelegate;
@@ -95,16 +94,13 @@ export class TuyaCameraAccessory {
     this.streamingDelegate.controller = cameraController;
     this.accessory.configureController(cameraController);
 
-    // Get the Camera service if it exists, otherwise create a new Camera service
-    const CameraService = (this.platform.Service as any).Camera;
-    this.service = this.accessory.getService(CameraService) || 
-      this.accessory.addService(CameraService);
+    // Camera service is handled by the controller, we don't need to manually add it
 
     // Add Motion Sensor service (optional)
     this.setupMotionSensor();
 
     // Set the service name, this is what is displayed as the default name on the Home app
-    this.service.setCharacteristic(this.platform.Characteristic.Name, device.name);
+    // Name is already set in the accessory information service above
   }
 
   /**
