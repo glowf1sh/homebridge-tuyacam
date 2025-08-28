@@ -22,13 +22,27 @@ export class TuyaCameraAccessory {
   ) {
     const device = accessory.context.device;
     
-    // Set accessory information
-    this.accessory.getService(this.platform.Service.AccessoryInformation)!
+    this.platform.log.debug('Setting up camera:', device.name);
+    
+    // IMPORTANT: Set accessory information AFTER camera controller
+    const infoService = this.accessory.getService(this.platform.Service.AccessoryInformation)!;
+    infoService
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Tuya')
       .setCharacteristic(this.platform.Characteristic.Model, device.model || 'Smart Camera')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, device.id);
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, device.id)
+      .setCharacteristic(this.platform.Characteristic.Name, device.name);
+    
+    // Remove any existing services that might interfere
+    const existingServices = this.accessory.services.filter(
+      service => service.UUID !== this.platform.Service.AccessoryInformation.UUID
+    );
+    
+    existingServices.forEach(service => {
+      this.platform.log.debug(`Removing existing service: ${service.displayName || service.UUID}`);
+      this.accessory.removeService(service);
+    });
 
-    // Initialize Tuya device connection
+    // Create Tuya device instance
     this.tuyaDevice = new TuyaDevice(
       device.id,
       device.key,
@@ -37,15 +51,16 @@ export class TuyaCameraAccessory {
     );
 
     // Connect to device
-    this.tuyaDevice.connect().then(connected => {
-      if (connected) {
-        this.platform.log.info(`Connected to camera: ${device.name}`);
-      } else {
-        this.platform.log.error(`Failed to connect to camera: ${device.name}`);
-      }
-    });
+    this.tuyaDevice.connect()
+      .then((connected) => {
+        if (connected) {
+          this.platform.log.info(`Connected to camera: ${device.name}`);
+        } else {
+          this.platform.log.error(`Failed to connect to camera: ${device.name}`);
+        }
+      });
 
-    // Setup camera streaming
+    // Set up camera streaming delegate
     this.streamingDelegate = new TuyaCameraStreamingDelegate(
       this.platform.log,
       device,
@@ -90,61 +105,62 @@ export class TuyaCameraAccessory {
       },
     };
 
+    // Create camera controller - this automatically adds all necessary camera services
     const cameraController = new this.platform.api.hap.CameraController(options);
     this.streamingDelegate.controller = cameraController;
+    
+    // Configure the camera controller for this accessory
     this.accessory.configureController(cameraController);
 
-    // Camera service is handled by the controller, we don't need to manually add it
-
-    // Add Motion Sensor service (optional)
+    // Add Motion Sensor service (optional) - AFTER camera controller
     this.setupMotionSensor();
 
-    // Set the service name, this is what is displayed as the default name on the Home app
-    // Name is already set in the accessory information service above
+    this.platform.log.info('Camera accessory configured:', device.name);
   }
 
   /**
    * Setup motion sensor if camera supports it
    */
-  private setupMotionSensor() {
+  private setupMotionSensor(): void {
     const device = this.accessory.context.device;
     
-    // Check if motion detection is supported (DP 134 based on tinytuya output)
-    const supportsMotion = true; // We know from the mapping that both cameras have motion_switch
-
-    if (supportsMotion) {
-      this.motionService = this.accessory.getService(this.platform.Service.MotionSensor) || 
-        this.accessory.addService(this.platform.Service.MotionSensor);
-
-      this.motionService.setCharacteristic(this.platform.Characteristic.Name, `${device.name} Motion`);
-
-      // Set initial state
-      this.motionService.updateCharacteristic(
-        this.platform.Characteristic.MotionDetected,
-        false,
-      );
-
-      // Listen for motion events from Tuya device
-      this.tuyaDevice.on('motion', (detected: boolean) => {
-        this.platform.log.debug(`Motion ${detected ? 'detected' : 'cleared'} on ${device.name}`);
-        this.motionService?.updateCharacteristic(
-          this.platform.Characteristic.MotionDetected,
-          detected,
-        );
-      });
-
-      // Poll motion status periodically
-      setInterval(async () => {
-        try {
-          const motionDetected = await this.tuyaDevice.getMotionStatus();
-          this.motionService?.updateCharacteristic(
-            this.platform.Characteristic.MotionDetected,
-            motionDetected,
-          );
-        } catch (error) {
-          this.platform.log.debug('Failed to get motion status:', error);
-        }
-      }, 10000); // Poll every 10 seconds
+    // Only add motion sensor if explicitly enabled
+    if (device.motion === false) {
+      return;
     }
+
+    this.motionService = this.accessory.getService(this.platform.Service.MotionSensor) || 
+      this.accessory.addService(this.platform.Service.MotionSensor);
+
+    this.motionService.setCharacteristic(this.platform.Characteristic.Name, `${device.name} Motion`);
+
+    // Set initial state
+    this.motionService.updateCharacteristic(
+      this.platform.Characteristic.MotionDetected,
+      false,
+    );
+
+    // Listen for motion events from Tuya device
+    this.tuyaDevice.on('motion', (detected: boolean) => {
+      this.platform.log.debug(`Motion ${detected ? 'detected' : 'cleared'} on ${device.name}`);
+      this.motionService!.updateCharacteristic(
+        this.platform.Characteristic.MotionDetected,
+        detected,
+      );
+    });
+
+    // Poll for motion status periodically
+    setInterval(() => {
+      this.tuyaDevice.getMotionStatus()
+        .then((detected) => {
+          this.motionService!.updateCharacteristic(
+            this.platform.Characteristic.MotionDetected,
+            detected,
+          );
+        })
+        .catch((error) => {
+          this.platform.log.debug('Failed to get motion status:', error);
+        });
+    }, 10000); // Check every 10 seconds
   }
 }
