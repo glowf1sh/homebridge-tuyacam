@@ -1,0 +1,160 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Package files
+*.tgz
+
+# SECURITY: NEVER COMMIT ANY CREDENTIALS OR KEYS
+# Config files that might contain keys
+config.json
+# But allow config.schema.json (UI definition)
+!config.schema.json
+.homebridge/
+homebridge/
+
+# Test files that might contain credentials
+*test*.js
+*Test*.js
+*TEST*.js
+test*.js
+Test*.js
+TEST*.js
+local*.js
+Local*.js
+LOCAL*.js
+*local*.js
+*Local*.js
+*LOCAL*.js
+example*.js
+Example*.js
+EXAMPLE*.js
+*example*.js
+*Example*.js
+*EXAMPLE*.js
+demo*.js
+Demo*.js
+DEMO*.js
+*demo*.js
+*Demo*.js
+*DEMO*.js
+
+# Security files
+*.key
+*.pem
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# Files with secrets
+secrets*
+Secrets*
+SECRETS*
+*secret*
+*Secret*
+*SECRET*
+credentials*
+Credentials*
+CREDENTIALS*
+*credential*
+*Credential*
+*CREDENTIAL*
+private*
+Private*
+PRIVATE*
+*private*
+*Private*
+*PRIVATE*
+keys*
+Keys*
+KEYS*
+*key*
+*Key*
+*KEY*
+auth*
+Auth*
+AUTH*
+*auth*
+*Auth*
+*AUTH*
+sensitive*
+Sensitive*
+SENSITIVE*
+*sensitive*
+*Sensitive*
+*SENSITIVE*
+
+# Personal test files
+get-keys.js
+local-test.js
+auto-discovery.js
+AUTO_DISCOVERY.js
+test-streaming.js
+TEST_STREAMING.js
+verify-stream.js
+VERIFY_STREAM.js
+SETUP_ANLEITUNG.md
+
+# Any file with device IDs, IPs, or keys
+*bfb1ad62e464b28697xaya*
+*bfed2d8d977c028f2ffgfs*
+*10.0.0.129*
+*10.0.0.177*
+*RN04GSX2R0*
+*9160da9bdf639dbf*
+*p8m8xre3fhv5fekpqmdu*
+*ecf4d51687f8411fa18104ea6b4be4f9*
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+*~

@@ -1,0 +1,96 @@
+{
+  "pluginAlias": "TuyaCam",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Add your Tuya cameras to HomeKit. You need the Device ID and Local Key for each camera.",
+  "footerDisplay": "To get your Device ID and Local Key, use TinyTuya or follow our guide.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "Tuya Cameras"
+      },
+      "cameras": {
+        "title": "Cameras",
+        "type": "array",
+        "required": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Camera Name",
+              "type": "string",
+              "required": true,
+              "placeholder": "Living Room Camera",
+              "description": "Display name in HomeKit"
+            },
+            "id": {
+              "title": "Device ID",
+              "type": "string",
+              "required": true,
+              "placeholder": "YOUR_DEVICE_ID_HERE",
+              "description": "Device ID from Tuya (get with TinyTuya)"
+            },
+            "key": {
+              "title": "Local Key",
+              "type": "string",
+              "required": true,
+              "placeholder": "1234567890abcdef",
+              "description": "16-character local key (get with TinyTuya)"
+            },
+            "ip": {
+              "title": "IP Address (Optional)",
+              "type": "string",
+              "required": false,
+              "placeholder": "192.168.1.100",
+              "description": "Camera IP address (will auto-discover if not provided)"
+            }
+          }
+        }
+      },
+      "debug": {
+        "title": "Debug Mode",
+        "type": "boolean",
+        "required": false,
+        "default": false,
+        "description": "Show detailed logs for troubleshooting"
+      }
+    }
+  },
+  "layout": [
+    {
+      "type": "fieldset",
+      "title": "Basic Settings",
+      "items": ["name"]
+    },
+    {
+      "type": "fieldset",
+      "title": "Camera Configuration",
+      "expandable": false,
+      "description": "Add your Tuya cameras. You need the Device ID and Local Key for each camera.",
+      "items": [{
+        "key": "cameras",
+        "type": "array",
+        "items": [{
+          "type": "fieldset",
+          "items": [
+            "cameras[].name",
+            "cameras[].id",
+            "cameras[].key",
+            "cameras[].ip"
+          ]
+        }]
+      }]
+    },
+    {
+      "type": "fieldset",
+      "title": "Advanced",
+      "expandable": true,
+      "expanded": false,
+      "items": ["debug"]
+    }
+  ]
+}

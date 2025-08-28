@@ -1,0 +1,42 @@
+{
+  "name": "homebridge-tuyacam",
+  "displayName": "Homebridge TuyaCam",
+  "version": "0.0.1",
+  "description": "Homebridge plugin for Tuya security cameras",
+  "license": "MIT",
+  "author": {
+    "name": "Glowf1sh",
+    "url": "https://twitch.tv/glowf1sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/username/homebridge-tuyacam.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/homebridge-tuyacam/issues"
+  },
+  "engines": {
+    "node": "^18.17.0 || ^20.9.0 || ^22.0.0",
+    "homebridge": "^1.6.0"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "tuya",
+    "camera",
+    "security camera"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.19.11",
+    "homebridge": "^1.7.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "ffmpeg-for-homebridge": "^2.1.1"
+  }
+}
