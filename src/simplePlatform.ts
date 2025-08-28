@@ -96,6 +96,10 @@ export class SimpleTuyaCamPlatform implements DynamicPlatformPlugin {
 
         // Update the accessory context with the latest config
         existingAccessory.context.device = camera;
+        
+        // Make sure the category is set to Camera
+        existingAccessory.category = this.api.hap.Categories.CAMERA;
+        
         this.api.updatePlatformAccessories([existingAccessory]);
 
         // Create the accessory handler
@@ -109,6 +113,9 @@ export class SimpleTuyaCamPlatform implements DynamicPlatformPlugin {
 
         // Store a copy of the device object in the `accessory.context`
         accessory.context.device = camera;
+        
+        // Set the accessory category to Camera
+        accessory.category = this.api.hap.Categories.CAMERA;
 
         // Create the accessory handler
         new TuyaCameraAccessory(this, accessory);
