@@ -1,5 +1,4 @@
 import { 
-  Service, 
   PlatformAccessory,
   CameraControllerOptions,
 } from 'homebridge';
@@ -9,10 +8,10 @@ import { TuyaDevice } from './tuyaDevice';
 import { TuyaCameraStreamingDelegate } from './cameraStreamingDelegate';
 
 /**
- * Tuya Camera Accessory
+ * Tuya Camera Accessory - MINIMAL TEST VERSION
  */
 export class TuyaCameraAccessory {
-  private motionService?: Service;
+  // private motionService?: Service; // Disabled for minimal test
   private tuyaDevice: TuyaDevice;
   private streamingDelegate: TuyaCameraStreamingDelegate;
 
@@ -68,38 +67,39 @@ export class TuyaCameraAccessory {
       this.platform.api.hap,
     );
 
+    // MINIMAL TEST CONFIGURATION
+    this.platform.log.warn(`[${device.name}] !!! USING MINIMAL DEBUG CONFIGURATION !!!`);
     const options: CameraControllerOptions = {
-      cameraStreamCount: 2,
-      delegate: this.streamingDelegate,
+      cameraStreamCount: 2, // HomeKit requires at least 2 streams
+      delegate: this.streamingDelegate, // The accessory must implement the streaming delegate methods
       streamingOptions: {
         supportedCryptoSuites: [this.platform.api.hap.SRTPCryptoSuites.AES_CM_128_HMAC_SHA1_80],
         video: {
           resolutions: [
+            // width, height, fps
             [1920, 1080, 30],
             [1280, 720, 30],
-            [640, 480, 30],
-            [320, 240, 15],
+            [640, 360, 30],
           ],
           codec: {
-            profiles: [
-              this.platform.api.hap.H264Profile.BASELINE,
-              this.platform.api.hap.H264Profile.MAIN,
-              this.platform.api.hap.H264Profile.HIGH,
-            ],
-            levels: [
-              this.platform.api.hap.H264Level.LEVEL3_1,
-              this.platform.api.hap.H264Level.LEVEL3_2,
-              this.platform.api.hap.H264Level.LEVEL4_0,
-            ],
+            profiles: [this.platform.api.hap.H264Profile.MAIN],
+            levels: [this.platform.api.hap.H264Level.LEVEL4_0],
           },
         },
-        // Disable audio completely to prevent microphone service
-        audio: undefined,
+        audio: {
+          // Even if you don't use it, you often need to declare support
+          codecs: [
+            {
+              type: this.platform.api.hap.AudioStreamingCodecType.OPUS,
+              samplerate: this.platform.api.hap.AudioStreamingSamplerate.KHZ_24,
+            },
+          ],
+        },
       },
     };
 
     // CRITICAL DEBUG LOGGING
-    this.platform.log.warn(`[${device.name}] USING CAMERA OPTIONS: ${JSON.stringify(options, null, 2)}`);
+    this.platform.log.warn(`[${device.name}] USING MINIMAL CAMERA OPTIONS: ${JSON.stringify(options, null, 2)}`);
 
     // Create camera controller - this automatically adds all necessary camera services
     this.platform.log.info(`[${device.name}] Preparing CameraController...`);
@@ -111,59 +111,22 @@ export class TuyaCameraAccessory {
       // Configure the camera controller for this accessory
       this.accessory.configureController(cameraController);
       this.platform.log.info(`[${device.name}] CameraController configured successfully!`);
+      
+      // Get the Camera Control service to ensure it's primary
+      const cameraControlService = this.accessory.getService(this.platform.Service.CameraControl);
+      if (cameraControlService) {
+        this.platform.log.info(`[${device.name}] CameraControl service found, setting as primary`);
+        // this.accessory.setPrimaryService(cameraControlService); // Method not available in this version
+      } else {
+        this.platform.log.error(`[${device.name}] CameraControl service NOT found!`);
+      }
     } catch (e) {
       this.platform.log.error(`[${device.name}] FAILED to configure CameraController:`, e);
     }
 
-    // Add Motion Sensor service (optional) - AFTER camera controller
-    this.setupMotionSensor();
+    // DO NOT add Motion Sensor for this test
+    this.platform.log.warn(`[${device.name}] Motion sensor DISABLED for minimal test`);
 
     this.platform.log.info('Camera accessory configured:', device.name);
-  }
-
-  /**
-   * Setup motion sensor if camera supports it
-   */
-  private setupMotionSensor(): void {
-    const device = this.accessory.context.device;
-    
-    // Only add motion sensor if explicitly enabled
-    if (device.motion === false) {
-      return;
-    }
-
-    this.motionService = this.accessory.getService(this.platform.Service.MotionSensor) || 
-      this.accessory.addService(this.platform.Service.MotionSensor);
-
-    this.motionService.setCharacteristic(this.platform.Characteristic.Name, `${device.name} Motion`);
-
-    // Set initial state
-    this.motionService.updateCharacteristic(
-      this.platform.Characteristic.MotionDetected,
-      false,
-    );
-
-    // Listen for motion events from Tuya device
-    this.tuyaDevice.on('motion', (detected: boolean) => {
-      this.platform.log.debug(`Motion ${detected ? 'detected' : 'cleared'} on ${device.name}`);
-      this.motionService!.updateCharacteristic(
-        this.platform.Characteristic.MotionDetected,
-        detected,
-      );
-    });
-
-    // Poll for motion status periodically
-    setInterval(() => {
-      this.tuyaDevice.getMotionStatus()
-        .then((detected) => {
-          this.motionService!.updateCharacteristic(
-            this.platform.Characteristic.MotionDetected,
-            detected,
-          );
-        })
-        .catch((error) => {
-          this.platform.log.debug('Failed to get motion status:', error);
-        });
-    }, 10000); // Check every 10 seconds
   }
 }

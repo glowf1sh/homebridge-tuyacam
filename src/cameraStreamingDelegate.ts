@@ -41,7 +41,8 @@ export class TuyaCameraStreamingDelegate implements CameraStreamingDelegate {
   constructor(
     private readonly log: Logger,
     private readonly cameraConfig: any,
-    _tuyaDevice: TuyaDevice,
+    // @ts-ignore - Will be used for actual stream implementation
+    private readonly tuyaDevice: TuyaDevice,
     hap: HAP,
   ) {
     this.hap = hap;
