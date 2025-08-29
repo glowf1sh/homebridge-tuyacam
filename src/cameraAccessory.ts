@@ -116,7 +116,8 @@ export class TuyaCameraAccessory {
     }
 
     // Add Motion Sensor service (optional) - AFTER camera controller
-    this.setupMotionSensor();
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    // this.setupMotionSensor();
 
     this.platform.log.info('Camera accessory configured:', device.name);
   }
@@ -124,6 +125,7 @@ export class TuyaCameraAccessory {
   /**
    * Setup motion sensor if camera supports it
    */
+  // @ts-ignore - Temporarily disabled for debugging
   private setupMotionSensor(): void {
     const device = this.accessory.context.device;
     

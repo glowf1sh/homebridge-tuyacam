@@ -85,7 +85,7 @@ export class SimpleTuyaCamPlatform implements DynamicPlatformPlugin {
 
       // Generate a unique id for the accessory
       // Generate UUID with prefix and version to force new accessory
-      const uuid = this.api.hap.uuid.generate('tuyacam_v2_' + camera.id);
+      const uuid = this.api.hap.uuid.generate('tuyacam_v3_' + camera.id);
 
       // See if an accessory with the same uuid has already been registered and restored from
       // the cached devices we stored in the `configureAccessory` method above
